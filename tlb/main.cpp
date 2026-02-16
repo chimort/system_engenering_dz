@@ -22,13 +22,11 @@ static uint64_t median_vec(std::vector<uint64_t> v) {
     return (v[n/2 - 1] + v[n/2]) / 2;
 }
 
-int main(int argc, char** argv) {
-    // Параметры по умолчанию
-    const size_t MAX_PAGES = 1 << 16; // 65536
+int main() {
+    const size_t MAX_PAGES = 1 << 16;
     uint64_t TARGET_TOTAL_ACCESSES = 50'000'000ULL;
     int trials = 3;
 
-    // Fine ranges (автоматически выполняются после coarse)
     const size_t L1_FINE_START = 64;
     const size_t L1_FINE_END   = 128;
     const size_t L1_FINE_STEP  = 1;
@@ -45,21 +43,6 @@ int main(int argc, char** argv) {
         {"trials", required_argument, 0, 't'},
         {0,0,0,0}
     };
-    int opt;
-    int option_index = 0;
-    while ((opt = getopt_long(argc, argv, "a:t:", long_options, &option_index)) != -1) {
-        switch (opt) {
-            case 'a':
-                TARGET_TOTAL_ACCESSES = std::stoull(optarg);
-                break;
-            case 't':
-                trials = std::stoi(optarg);
-                if (trials < 1) trials = 1;
-                break;
-            default:
-                break;
-        }
-    }
 
     const size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
     std::cout << "Detected page size: " << page_size << " bytes\n";
@@ -94,12 +77,6 @@ int main(int argc, char** argv) {
         for (int tr = 0; tr < trials; ++tr) {
             std::shuffle(order.begin(), order.end(), rng);
 
-            // warm-up
-            for (size_t i = 0; i < num_pages; ++i) {
-                size_t off = order[i] * page_size;
-                sink += buf[off];
-            }
-
             // compiler barrier
             asm volatile("" ::: "memory");
 
@@ -133,7 +110,6 @@ int main(int argc, char** argv) {
         rng.seed(rng() ^ (num_pages + 0x9e3779b97f4a7c15ULL));
     }
 
-    // baseline: median of coarse results for pages <= 64 (or available)
     std::vector<double> smalls;
     for (auto &p : coarse) if (p.first <= 64) smalls.push_back(p.second);
     double baseline = 0.0;
