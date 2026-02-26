@@ -1,4 +1,3 @@
-// main.cpp - coarse + automatic fine L1 and L2 scans
 #include <iostream>
 #include <vector>
 #include <random>
@@ -30,14 +29,13 @@ int main() {
     const size_t L1_FINE_START = 64;
     const size_t L1_FINE_END   = 128;
     const size_t L1_FINE_STEP  = 1;
-    const double L1_THRESHOLD  = 0.20; // 20% рост
+    const double L1_THRESHOLD  = 0.20; 
 
     const size_t L2_FINE_START = 512;
     const size_t L2_FINE_END   = 2048;
     const size_t L2_FINE_STEP  = 32;
-    const double L2_THRESHOLD  = 0.30; // 30% рост
+    const double L2_THRESHOLD  = 0.30; 
 
-    // parsing minimal options if user passed --accesses or --trials (keeps backward compatibility)
     static struct option long_options[] = {
         {"accesses", required_argument, 0, 'a'},
         {"trials", required_argument, 0, 't'},
@@ -119,7 +117,6 @@ int main() {
     } else baseline = coarse.front().second;
     std::cout << "\nBaseline (median for pages<=64) = " << baseline << " ns\n";
 
-    // --- Fine pass for L1 ---
     std::cout << "\n=== Fine pass for L1 (pages " << L1_FINE_START << " .. " << L1_FINE_END << ") ===\n";
     size_t detected_l1 = 0;
     for (size_t num_pages = L1_FINE_START; num_pages <= L1_FINE_END; num_pages += L1_FINE_STEP) {
@@ -139,7 +136,6 @@ int main() {
         std::cout << "\nNo clear L1 boundary found in " << L1_FINE_START << ".."<<L1_FINE_END << "\n";
     }
 
-    // --- Fine pass for L2 ---
     std::cout << "\n=== Fine pass for L2 (pages " << L2_FINE_START << " .. " << L2_FINE_END << " step " << L2_FINE_STEP << ") ===\n";
     size_t detected_l2 = 0;
     for (size_t num_pages = L2_FINE_START; num_pages <= L2_FINE_END; num_pages += L2_FINE_STEP) {
